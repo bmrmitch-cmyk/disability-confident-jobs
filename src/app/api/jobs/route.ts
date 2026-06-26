@@ -1,7 +1,14 @@
 import { searchJobs, getJobStats } from "@/lib/jobs";
 import { revalidatePath } from "next/cache";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function GET(request: Request) {
+  const ip = request.headers.get("x-forwarded-for") ?? "anonymous";
+  const { allowed, remaining } = rateLimit(`jobs:${ip}`, 60, 60_000);
+  if (!allowed) {
+    return Response.json({ error: "Too many requests" }, { status: 429, headers: { "Retry-After": "60" } });
+  }
+
   const params = new URL(request.url).searchParams;
 
   if (params.get("stats") === "true") {

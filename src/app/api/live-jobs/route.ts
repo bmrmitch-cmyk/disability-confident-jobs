@@ -1,5 +1,6 @@
 import { getEmployer, jobSearchLinks } from "@/lib/employers";
 import type { Employer } from "@/lib/employers";
+import { rateLimit } from "@/lib/rate-limit";
 
 type LiveJob = {
   title: string;
@@ -57,6 +58,12 @@ function parseRss(xml: string): LiveJob[] {
 }
 
 export async function GET(request: Request): Promise<Response> {
+  const ip = request.headers.get("x-forwarded-for") ?? "anonymous";
+  const { allowed } = rateLimit(`live:${ip}`, 20, 60_000);
+  if (!allowed) {
+    return Response.json({ error: "Too many requests" }, { status: 429, headers: { "Retry-After": "60" } });
+  }
+
   const id = new URL(request.url).searchParams.get("id") ?? "";
   const employer = getEmployer(id);
 

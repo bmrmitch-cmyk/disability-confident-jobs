@@ -106,6 +106,11 @@ function JobsBoard() {
   const [selected, setSelected] = useState<Job | null>(null);
   const [loading, setLoading] = useState(false);
   const profileRef = useRef<HTMLElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [page]);
 
   function selectJob(job: Job) {
     setSelected(job);
@@ -222,7 +227,7 @@ function JobsBoard() {
           <Metric icon={<Building2 size={19} />} value={number(stats?.total ?? 0)} label="Total vacancies" />
         </div>
 
-        <div className="panel directory-panel">
+        <div className="panel directory-panel" ref={resultsRef}>
           <div className="section-heading">
             <div>
               <span><Briefcase size={14} /> Job vacancies</span>
@@ -233,7 +238,15 @@ function JobsBoard() {
 
           <div className="directory-grid">
             <div className="employer-list">
-              {results.items.map((job) => (
+              {loading
+                ? Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="skeleton-row">
+                      <div className="skeleton skeleton-title" />
+                      <div className="skeleton skeleton-text" />
+                      <div className="skeleton skeleton-meta" />
+                    </div>
+                  ))
+                : results.items.map((job) => (
                 <article key={job.id} className={`job-row ${selected?.id === job.id ? "active" : ""}`} role="button" tabIndex={0} aria-label={`${job.title} at ${job.employerName}`} onClick={() => selectJob(job)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectJob(job); }}}>
                   <div className="job-row-top">
                     <h3>{job.title}</h3>
@@ -320,7 +333,7 @@ function JobsBoard() {
               {selected.relevanceScore >= 30 ? (
                 <div className="access-card cyber-card">
                   <h3>Cyber priority role</h3>
-                  <p>Matched keywords: {selected.matchedKeywords}</p>
+                  <p>This role has been identified as a priority for cyber-security, data protection, or digital infrastructure skills. These roles are in high demand across Disability Confident employers.</p>
                 </div>
               ) : null}
 
@@ -361,6 +374,15 @@ function EmployerDirectory({ stats, initialResults }: { stats: PlatformStats; in
   const [loading, setLoading] = useState(false);
   const [liveJobs, setLiveJobs] = useState<LiveJobs | null>(null);
   const [liveLoading, setLiveLoading] = useState(false);
+  const profileRef = useRef<HTMLElement>(null);
+
+  function selectEmployer(employer: Employer) {
+    setSelected(employer);
+    setLiveJobs(null);
+    setTimeout(() => {
+      profileRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }, 50);
+  }
 
   const activeFilters = useMemo(() => [query, region, sector, level].filter(Boolean).length, [query, region, sector, level]);
   const topRegions = stats.regions.slice(0, 8);
@@ -412,6 +434,12 @@ function EmployerDirectory({ stats, initialResults }: { stats: PlatformStats; in
     setLevel("");
     setPage(1);
   }
+
+  const empResultsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    empResultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [page]);
 
   async function scanJobs(employer: Employer) {
     setSelected(employer);
@@ -498,7 +526,7 @@ function EmployerDirectory({ stats, initialResults }: { stats: PlatformStats; in
           </div>
         </div>
 
-        <div className="panel directory-panel">
+        <div className="panel directory-panel" ref={empResultsRef}>
           <div className="section-heading">
             <div>
               <span><Radar size={14} /> Employer directory</span>
@@ -509,8 +537,16 @@ function EmployerDirectory({ stats, initialResults }: { stats: PlatformStats; in
 
           <div className="directory-grid">
             <div className="employer-list">
-              {results.items.map((employer) => (
-                <button key={employer.id} type="button" className={`employer-row ${selected?.id === employer.id ? "active" : ""}`} onClick={() => { setSelected(employer); setLiveJobs(null); }}>
+              {loading
+                ? Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="skeleton-row">
+                      <div className="skeleton skeleton-emp-pill" />
+                      <div className="skeleton skeleton-emp-name" />
+                      <div className="skeleton skeleton-emp-loc" />
+                    </div>
+                  ))
+                : results.items.map((employer) => (
+                <button key={employer.id} type="button" className={`employer-row ${selected?.id === employer.id ? "active" : ""}`} onClick={() => selectEmployer(employer)}>
                   <span className={`level-pill ${levelClass[employer.level]}`}>{employer.level}</span>
                   <div>
                     <h3>{employer.name}</h3>
@@ -575,7 +611,7 @@ function EmployerDirectory({ stats, initialResults }: { stats: PlatformStats; in
         </div>
       </section>
 
-      <aside className="profile-rail">
+      <aside className="profile-rail" ref={profileRef}>
         <div className="profile-panel">
           {selected ? (
             <>

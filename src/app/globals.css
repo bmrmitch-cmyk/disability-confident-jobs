@@ -1314,3 +1314,65 @@ a {
   font-weight: 950;
   cursor: pointer;
 }
+
+.skeleton-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+  border: 3px solid var(--blue);
+  border-radius: 8px;
+  background: var(--cream);
+  padding: 18px 14px;
+}
+
+.skeleton-row + .skeleton-row {
+  margin-top: 10px;
+}
+
+.skeleton {
+  border-radius: 6px;
+  background: linear-gradient(90deg, rgb(0 85 155 / 0.08) 25%, rgb(0 85 155 / 0.18) 50%, rgb(0 85 155 / 0.08) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-title {
+  width: 65%;
+  height: 22px;
+}
+
+.skeleton-text {
+  width: 45%;
+  height: 16px;
+  margin-top: 4px;
+}
+
+.skeleton-meta {
+  width: 100%;
+  height: 14px;
+  margin-top: 10px;
+}
+
+.skeleton-emp-pill {
+  width: 80px;
+  height: 32px;
+}
+
+.skeleton-emp-name {
+  flex: 1;
+  min-width: 120px;
+  height: 32px;
+}
+
+.skeleton-emp-loc {
+  width: 100px;
+  height: 32px;
+}
+
+
