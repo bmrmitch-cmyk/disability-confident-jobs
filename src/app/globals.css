@@ -1701,91 +1701,124 @@ a {
 
 .blog-panel {
   background: var(--cream);
+  border: 4px solid var(--blue);
+  border-radius: 10px;
+  padding: 20px 16px 16px;
+  box-shadow: 6px 6px 0 var(--blue);
 }
 
 .blog-panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 3px solid var(--blue);
 }
 
 .blog-panel-header h3 {
   margin: 0;
   color: var(--blue);
   font-family: Impact, "Arial Black", sans-serif;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .blog-panel-header a,
 .blog-cta {
   color: var(--magenta);
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 950;
   text-decoration: none;
+  text-transform: uppercase;
 }
 
 .blog-panel-header a:hover,
 .blog-cta:hover {
+  color: var(--blue);
   text-decoration: underline;
 }
 
 .blog-scroll {
-  max-height: 480px;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding-right: 4px;
-}
-
-.blog-scroll::-webkit-scrollbar {
-  width: 4px;
-}
-
-.blog-scroll::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: var(--blue);
+  gap: 12px;
 }
 
 .blog-teaser {
   display: block;
-  border: 2px solid var(--blue);
-  border-radius: 6px;
-  padding: 10px;
+  border: 3px solid var(--blue);
+  border-radius: 8px;
+  padding: 14px;
   text-decoration: none;
-  transition: background 0.12s;
+  background: var(--white);
+  transition: background 0.12s, transform 0.12s, box-shadow 0.12s;
 }
 
 .blog-teaser:hover {
   background: var(--butter);
+  box-shadow: 4px 4px 0 var(--blue);
+  transform: translateY(-1px);
 }
 
 .blog-teaser-cat {
   display: inline-block;
-  border: 2px solid var(--blue);
+  border: 3px solid currentColor;
   border-radius: 999px;
-  padding: 2px 7px;
-  color: var(--blue);
+  padding: 3px 10px;
   font-size: 0.68rem;
   font-weight: 950;
   text-transform: uppercase;
+  line-height: 1;
+}
+
+.blog-teaser-cat:has(+ strong) {
+  margin-bottom: 8px;
+}
+
+.blog-teaser-cat.is-neuro {
+  background: #e8dff5;
+  color: #5a2d82;
+  border-color: #5a2d82;
+}
+
+.blog-teaser-cat.is-research {
+  background: #d4edda;
+  color: #155724;
+  border-color: #155724;
+}
+
+.blog-teaser-cat.is-advice {
+  background: #cce5ff;
+  color: #00447c;
+  border-color: #00447c;
+}
+
+.blog-teaser-cat.is-guide {
+  background: #fff3cd;
+  color: #856404;
+  border-color: #856404;
 }
 
 .blog-teaser strong {
   display: block;
   margin: 6px 0 4px;
   color: var(--blue);
-  font-size: 0.88rem;
-  line-height: 1.25;
+  font-family: Impact, "Arial Black", sans-serif;
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1.15;
+  text-transform: uppercase;
+  letter-spacing: 0;
 }
 
 .blog-teaser p {
   margin: 0;
-  color: rgb(0 85 155 / 0.7);
-  font-size: 0.78rem;
-  line-height: 1.35;
+  color: rgb(0 85 155 / 0.72);
+  font-size: 0.8rem;
+  font-weight: 900;
+  line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -1793,7 +1826,12 @@ a {
 }
 
 .blog-cta-panel {
+  border: 4px solid var(--magenta);
+  border-radius: 10px;
   background: var(--butter);
+  padding: 18px;
+  box-shadow: 6px 6px 0 var(--magenta);
+  text-align: center;
 }
 
 .blog-cta-panel h3 {
@@ -1802,17 +1840,37 @@ a {
   font-family: Impact, "Arial Black", sans-serif;
   font-size: 1rem;
   text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .blog-cta-panel p {
-  margin: 0 0 10px;
+  margin: 0 0 14px;
   color: rgb(0 85 155 / 0.8);
-  font-size: 0.85rem;
-  line-height: 1.4;
+  font-size: 0.82rem;
+  font-weight: 900;
+  line-height: 1.45;
 }
 
 .blog-cta {
   display: inline-block;
+  border: 3px solid var(--magenta);
+  border-radius: 8px;
+  background: var(--magenta);
+  padding: 10px 22px;
+  color: var(--cream) !important;
+  font-size: 0.85rem;
+  font-weight: 950;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  transition: background 0.12s, transform 0.12s;
+}
+
+.blog-cta:hover {
+  background: var(--blue) !important;
+  color: var(--cream) !important;
+  text-decoration: none !important;
+  transform: translateY(-1px);
 }
 
 /* ── Search hero ── */
