@@ -3,6 +3,8 @@ import { CookieConsent } from "@/components/cookie-consent";
 import { AuthProvider } from "@/lib/auth-context";
 import { FavouritesProvider } from "@/lib/favourites";
 import { Footer } from "@/components/footer";
+import { SiteNav } from "@/components/site-nav";
+import { ScrollSignupPrompt } from "@/components/scroll-signup";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -37,7 +39,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <AuthProvider>
           <FavouritesProvider>
             <a href="#main-content" className="skip-link">Skip to main content</a>
+            <SiteNav />
             <div id="main-content">{children}</div>
+            <ScrollSignupPrompt />
             <Footer />
             <CookieConsent />
           </FavouritesProvider>
