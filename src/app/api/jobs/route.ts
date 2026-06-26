@@ -28,6 +28,11 @@ export async function GET(request: Request) {
     location: params.get("location") ?? undefined,
     employmentType: params.get("employmentType") ?? undefined,
     cyberPriority: params.get("cyberPriority") === "true",
+    accessRemote: params.get("accessRemote") === "true",
+    accessFlexible: params.get("accessFlexible") === "true",
+    accessStepFree: params.get("accessStepFree") === "true",
+    accessSensory: params.get("accessSensory") === "true",
+    accessAssistive: params.get("accessAssistive") === "true",
     page: params.get("page") ? Number(params.get("page")) : undefined,
     pageSize: params.get("pageSize") ? Number(params.get("pageSize")) : undefined,
   });

@@ -11,11 +11,21 @@ function loadJobs(): Job[] {
   if (jobsCache) return jobsCache;
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const raw = require("@/data/jobs.json") as Job[];
-    jobsCache = raw.map((j) => ({
-      ...j,
-      employerName: employerMap.get(j.employerId)?.name ?? "Unknown",
-    }));
+    const raw = require("@/data/jobs.json") as Array<Job & { accessRemote?: boolean; accessFlexible?: boolean; accessStepFree?: boolean; accessSensory?: boolean; accessAssistive?: boolean; featured?: boolean }>;
+    jobsCache = raw.map((j) => {
+      const type = (j.employmentType ?? "").toLowerCase();
+      const desc = (j.description ?? "").toLowerCase();
+      return {
+        ...j,
+        employerName: employerMap.get(j.employerId)?.name ?? "Unknown",
+        accessRemote: j.accessRemote ?? (type.includes("remote") || type.includes("home") || type.includes("wfh")),
+        accessFlexible: j.accessFlexible ?? (type.includes("part-time") || type.includes("flexible") || type.includes("job share")),
+        accessStepFree: j.accessStepFree ?? (desc.includes("step-free") || desc.includes("wheelchair") || desc.includes("accessible")),
+        accessSensory: j.accessSensory ?? (desc.includes("quiet") || desc.includes("sensory") || desc.includes("low-sensory")),
+        accessAssistive: j.accessAssistive ?? (desc.includes("assistive") || desc.includes("screen reader") || desc.includes("voice")),
+        featured: j.featured ?? false,
+      };
+    });
   } catch {
     jobsCache = [];
   }
@@ -70,6 +80,12 @@ export function searchJobs(params: {
   location?: string;
   employmentType?: string;
   cyberPriority?: boolean;
+  accessRemote?: boolean;
+  accessFlexible?: boolean;
+  accessStepFree?: boolean;
+  accessSensory?: boolean;
+  accessAssistive?: boolean;
+  featured?: boolean;
   page?: number;
   pageSize?: number;
 }): JobSearchResult {
@@ -104,7 +120,19 @@ export function searchJobs(params: {
     results = results.filter((j) => j.relevanceScore >= 30);
   }
 
-  results.sort((a, b) => b.relevanceScore - a.relevanceScore || new Date(b.datePosted).getTime() - new Date(a.datePosted).getTime());
+  if (params.accessRemote) results = results.filter((j) => j.accessRemote);
+  if (params.accessFlexible) results = results.filter((j) => j.accessFlexible);
+  if (params.accessStepFree) results = results.filter((j) => j.accessStepFree);
+  if (params.accessSensory) results = results.filter((j) => j.accessSensory);
+  if (params.accessAssistive) results = results.filter((j) => j.accessAssistive);
+  if (params.featured) results = results.filter((j) => j.featured);
+
+  results.sort((a, b) => {
+    if (a.featured !== b.featured) return a.featured ? -1 : 1;
+    const dateDiff = new Date(b.datePosted).getTime() - new Date(a.datePosted).getTime();
+    if (dateDiff !== 0 && !isNaN(dateDiff)) return dateDiff;
+    return b.relevanceScore - a.relevanceScore;
+  });
 
   const total = results.length;
   const totalPages = Math.max(1, Math.ceil(total / safePageSize));

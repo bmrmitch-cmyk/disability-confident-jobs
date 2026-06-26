@@ -14,6 +14,12 @@ export type Job = {
   ats: string;
   relevanceScore: number;
   matchedKeywords: string;
+  accessRemote: boolean;
+  accessFlexible: boolean;
+  accessStepFree: boolean;
+  accessSensory: boolean;
+  accessAssistive: boolean;
+  featured: boolean;
 };
 
 export type JobSearchResult = {

@@ -2,12 +2,15 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  ArrowLeft, ArrowRight, BadgeAlert, BarChart3, Briefcase, Building2,
-  CheckCircle2, ExternalLink, Filter, Globe2, GraduationCap, Layers3, Loader2,
-  MapPin, Medal, Radar, Search, ShieldCheck, Sparkles, X,
+  Accessibility, ArrowLeft, ArrowRight, BadgeAlert, BarChart3, Briefcase, Building2,
+  CheckCircle2, ExternalLink, Filter, Globe2, GraduationCap, Headphones,
+  Home, Layers3, Loader2, MapPin, Medal, Moon, MousePointer2, Radar,
+  Search, ShieldCheck, Sparkles, Sun, Volume2, X,
 } from "lucide-react";
 import type { Employer, EmployerSearchResult, PlatformStats } from "@/lib/employers";
 import type { Job, JobSearchResult, JobsStats } from "@/lib/jobs-types";
+import { BlogSidebar } from "@/components/blog-sidebar";
+import Link from "next/link";
 
 function safeDate(dateStr: string) {
   if (!dateStr) return null;
@@ -61,6 +64,17 @@ export function RadarWorkbench({ stats, initialResults }: { stats: PlatformStats
 }
 
 function TopBar({ stats, view, onViewChange }: { stats: PlatformStats; view: ViewMode; onViewChange: (v: ViewMode) => void }) {
+  const [dark, setDark] = useState(false);
+  const [dyslexic, setDyslexic] = useState(false);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = dark ? "dark" : "light";
+  }, [dark]);
+
+  useEffect(() => {
+    document.documentElement.dataset.font = dyslexic ? "dyslexic" : "normal";
+  }, [dyslexic]);
+
   return (
     <section className="topbar">
       <div className="brand-lockup">
@@ -77,8 +91,17 @@ function TopBar({ stats, view, onViewChange }: { stats: PlatformStats; view: Vie
         <button type="button" className={view === "employers" ? "active" : ""} onClick={() => onViewChange("employers")}>
           <Building2 size={16} /> Employers
         </button>
+        <Link href="/insights" className="nav-insights-link">
+          <Radar size={16} /> Insights
+        </Link>
       </div>
-      <div className="topbar-stats">
+      <div className="topbar-actions">
+        <button type="button" className={`toggle-btn ${dyslexic ? "active" : ""}`} onClick={() => setDyslexic((v) => !v)} title="Dyslexia-friendly font" aria-label="Toggle dyslexia-friendly font">
+          <Headphones size={16} /> Dyslexic
+        </button>
+        <button type="button" className={`toggle-btn ${dark ? "active" : ""}`} onClick={() => setDark((v) => !v)} title="Toggle dark mode" aria-label="Toggle dark mode">
+          {dark ? <Sun size={16} /> : <Moon size={16} />}
+        </button>
         <span>{number(stats.total)} employers</span>
         <strong>{number(stats.total)} indexed</strong>
       </div>
@@ -100,6 +123,11 @@ function JobsBoard() {
   const [location, setLocation] = useState("");
   const [employmentType, setEmploymentType] = useState("");
   const [cyberPriority, setCyberPriority] = useState(false);
+  const [accessRemote, setAccessRemote] = useState(false);
+  const [accessFlexible, setAccessFlexible] = useState(false);
+  const [accessStepFree, setAccessStepFree] = useState(false);
+  const [accessSensory, setAccessSensory] = useState(false);
+  const [accessAssistive, setAccessAssistive] = useState(false);
   const [page, setPage] = useState(1);
   const [results, setResults] = useState<JobSearchResult>({ items: [], total: 0, page: 1, pageSize: 24, totalPages: 1 });
   const [stats, setStats] = useState<JobsStats | null>(null);
@@ -119,7 +147,8 @@ function JobsBoard() {
     }, 50);
   }
 
-  const activeFilters = useMemo(() => [query, location, employmentType].filter(Boolean).length + (cyberPriority ? 1 : 0), [query, location, employmentType, cyberPriority]);
+  const accessFilters = useMemo(() => [accessRemote, accessFlexible, accessStepFree, accessSensory, accessAssistive], [accessRemote, accessFlexible, accessStepFree, accessSensory, accessAssistive]);
+  const activeFilters = useMemo(() => [query, location, employmentType].filter(Boolean).length + (cyberPriority ? 1 : 0) + accessFilters.filter(Boolean).length, [query, location, employmentType, cyberPriority, accessFilters]);
 
   useEffect(() => {
     fetch("/api/jobs?stats=true").then((r) => r.json()).then(setStats);
@@ -133,6 +162,11 @@ function JobsBoard() {
       if (location) params.set("location", location);
       if (employmentType) params.set("employmentType", employmentType);
       if (cyberPriority) params.set("cyberPriority", "true");
+      if (accessRemote) params.set("accessRemote", "true");
+      if (accessFlexible) params.set("accessFlexible", "true");
+      if (accessStepFree) params.set("accessStepFree", "true");
+      if (accessSensory) params.set("accessSensory", "true");
+      if (accessAssistive) params.set("accessAssistive", "true");
 
       setLoading(true);
       try {
@@ -156,7 +190,7 @@ function JobsBoard() {
       window.clearTimeout(timer);
       controller.abort();
     };
-  }, [query, location, employmentType, cyberPriority, page]);
+  }, [query, location, employmentType, cyberPriority, accessRemote, accessFlexible, accessStepFree, accessSensory, accessAssistive, page]);
 
   function resetPage<T>(setter: (value: T) => void, value: T) {
     setPage(1);
@@ -168,55 +202,18 @@ function JobsBoard() {
     setLocation("");
     setEmploymentType("");
     setCyberPriority(false);
+    setAccessRemote(false);
+    setAccessFlexible(false);
+    setAccessStepFree(false);
+    setAccessSensory(false);
+    setAccessAssistive(false);
     setPage(1);
   }
 
   return (
     <section className="workspace">
-      <aside className="control-rail">
-        <div className="panel intro-panel">
-          <ShieldCheck size={28} />
-          <h1>Live jobs from inclusive employers.</h1>
-          <p>Every job listed here is sourced from Disability Confident employers. Filter by role, location, or priority area.</p>
-        </div>
-
-        <div className="panel filter-panel">
-          <label className="search-box">
-            <Search size={18} />
-            <input value={query} onChange={(event) => resetPage(setQuery, event.target.value)} placeholder="Job title, skill, employer" />
-            {query ? <button type="button" onClick={() => resetPage(setQuery, "")} aria-label="Clear search"><X size={16} /></button> : null}
-          </label>
-
-          <div className="filter-chips">
-                            <button type="button" className={cyberPriority ? "chip active" : "chip"} onClick={() => resetPage(setCyberPriority, !cyberPriority)} title="Roles in cyber-security, data protection and digital infrastructure with high relevance scores">
-                              <BadgeAlert size={14} /> Cyber priority
-                            </button>
-          </div>
-
-          <label className="select-row">
-            <span><MapPin size={15} /> Location</span>
-            <select value={location} onChange={(event) => resetPage(setLocation, event.target.value)}>
-              <option value="">All locations</option>
-              {stats?.locations.map((item) => (
-                <option key={item.name} value={item.name}>{item.name} ({number(item.count)})</option>
-              ))}
-            </select>
-          </label>
-
-          <label className="select-row">
-            <span><Briefcase size={15} /> Type</span>
-            <select value={employmentType} onChange={(event) => resetPage(setEmploymentType, event.target.value)}>
-              <option value="">All types</option>
-              {stats?.employmentTypes.map((item) => (
-                <option key={item.name} value={item.name}>{item.name} ({number(item.count)})</option>
-              ))}
-            </select>
-          </label>
-
-          <button className="reset-button" type="button" disabled={!activeFilters} onClick={clearFilters}>
-            <Filter size={16} /> Reset filters
-          </button>
-        </div>
+      <aside className="control-rail blog-rail">
+        <BlogSidebar />
       </aside>
 
       <section className="result-stage">
@@ -236,6 +233,53 @@ function JobsBoard() {
             <strong>{loading ? "Searching..." : `${number(results.total)} matches`}</strong>
           </div>
 
+          <div className="search-hero">
+            <label className="search-box search-hero-box">
+              <Search size={20} />
+              <input value={query} onChange={(event) => resetPage(setQuery, event.target.value)} placeholder="Job title, skill, keyword..." />
+              {query ? <button type="button" onClick={() => resetPage(setQuery, "")} aria-label="Clear search"><X size={18} /></button> : null}
+            </label>
+            <div className="filter-bar">
+              <button type="button" className={`chip ${cyberPriority ? "active" : ""}`} onClick={() => resetPage(setCyberPriority, !cyberPriority)} title="Roles in cyber-security, data protection and digital infrastructure with high relevance scores">
+                <BadgeAlert size={14} /> Cyber
+              </button>
+              <button type="button" className={`chip ${accessRemote ? "active" : ""}`} onClick={() => resetPage(setAccessRemote, !accessRemote)}>
+                <Home size={14} /> Remote / WFH
+              </button>
+              <button type="button" className={`chip ${accessFlexible ? "active" : ""}`} onClick={() => resetPage(setAccessFlexible, !accessFlexible)}>
+                <MousePointer2 size={14} /> Flexible hours
+              </button>
+              <button type="button" className={`chip ${accessStepFree ? "active" : ""}`} onClick={() => resetPage(setAccessStepFree, !accessStepFree)}>
+                <Accessibility size={14} /> Step-free
+              </button>
+              <button type="button" className={`chip ${accessSensory ? "active" : ""}`} onClick={() => resetPage(setAccessSensory, !accessSensory)}>
+                <Volume2 size={14} /> Sensory-friendly
+              </button>
+              <button type="button" className={`chip ${accessAssistive ? "active" : ""}`} onClick={() => resetPage(setAccessAssistive, !accessAssistive)}>
+                <Headphones size={14} /> Assistive tech
+              </button>
+              <label className="select-row filter-select">
+                <select value={location} onChange={(event) => resetPage(setLocation, event.target.value)}>
+                  <option value="">All locations</option>
+                  {stats?.locations.map((item) => (
+                    <option key={item.name} value={item.name}>{item.name} ({number(item.count)})</option>
+                  ))}
+                </select>
+              </label>
+              <label className="select-row filter-select">
+                <select value={employmentType} onChange={(event) => resetPage(setEmploymentType, event.target.value)}>
+                  <option value="">All types</option>
+                  {stats?.employmentTypes.map((item) => (
+                    <option key={item.name} value={item.name}>{item.name} ({number(item.count)})</option>
+                  ))}
+                </select>
+              </label>
+              <button className="reset-button compact" type="button" disabled={!activeFilters} onClick={clearFilters}>
+                <Filter size={14} /> Reset
+              </button>
+            </div>
+          </div>
+
           <div className="directory-grid">
             <div className="employer-list">
               {loading
@@ -247,9 +291,10 @@ function JobsBoard() {
                     </div>
                   ))
                 : results.items.map((job) => (
-                <article key={job.id} className={`job-row ${selected?.id === job.id ? "active" : ""}`} role="button" tabIndex={0} aria-label={`${job.title} at ${job.employerName}`} onClick={() => selectJob(job)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectJob(job); }}}>
+                <article key={job.id} className={`job-row ${selected?.id === job.id ? "active" : ""} ${job.featured ? "featured-row" : ""}`} role="button" tabIndex={0} aria-label={`${job.title} at ${job.employerName}`} onClick={() => selectJob(job)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectJob(job); }}}>
                   <div className="job-row-top">
                     <h3>{job.title}</h3>
+                    {job.featured ? <span className="featured-tag">Featured</span> : null}
                     {job.relevanceScore >= 30 ? <span className="cyber-tag">Cyber</span> : null}
                   </div>
                   <p className="job-employer">{job.employerName}</p>
@@ -258,6 +303,15 @@ function JobsBoard() {
                     <span><Briefcase size={12} /> {job.employmentType}</span>
                     {job.salary ? <span className="job-salary">{job.salary}</span> : null}
                   </div>
+                  {(job.accessRemote || job.accessFlexible || job.accessStepFree || job.accessSensory || job.accessAssistive) ? (
+                    <div className="job-access-flags">
+                      {job.accessRemote ? <span>Remote</span> : null}
+                      {job.accessFlexible ? <span>Flexible</span> : null}
+                      {job.accessStepFree ? <span>Step-free</span> : null}
+                      {job.accessSensory ? <span>Sensory</span> : null}
+                      {job.accessAssistive ? <span>Assistive</span> : null}
+                    </div>
+                  ) : null}
                   <div className="job-footer">
                     <small>{job.ats ? `${job.ats} · ` : ""}Posted {safeDate(job.datePosted) ?? "Unknown date"}</small>
                     {safeDate(job.closingDate) ? <small className="closing">Closes {safeDate(job.closingDate)}</small> : null}
@@ -328,6 +382,15 @@ function JobsBoard() {
                 <span><b>Posted</b>{safeDate(selected.datePosted) ?? "Unknown"}</span>
                 {safeDate(selected.closingDate) ? <span><b>Closes</b>{safeDate(selected.closingDate)}</span> : null}
                 <span><b>ATS</b>{selected.ats || "Unknown"}</span>
+              </div>
+
+              <div className="profile-access-flags">
+                {selected.featured ? <span className="featured-badge">Featured employer</span> : null}
+                {selected.accessRemote ? <span>Remote / WFH</span> : null}
+                {selected.accessFlexible ? <span>Flexible hours</span> : null}
+                {selected.accessStepFree ? <span>Step-free access</span> : null}
+                {selected.accessSensory ? <span>Sensory-friendly</span> : null}
+                {selected.accessAssistive ? <span>Assistive tech</span> : null}
               </div>
 
               {selected.relevanceScore >= 30 ? (
@@ -455,53 +518,8 @@ function EmployerDirectory({ stats, initialResults }: { stats: PlatformStats; in
 
   return (
     <section className="workspace">
-      <aside className="control-rail">
-        <div className="panel intro-panel">
-          <ShieldCheck size={28} />
-          <h1>All the roles, none of the access FOMO.</h1>
-          <p>Search Disability Confident employers, compare inclusive hiring commitments and check where live vacancy pages are hiding.</p>
-        </div>
-
-        <div className="panel filter-panel">
-          <label className="search-box">
-            <Search size={18} />
-            <input value={query} onChange={(event) => resetPage(setQuery, event.target.value)} placeholder="Employer, town, postcode, sector" />
-            {query ? <button type="button" onClick={() => resetPage(setQuery, "")} aria-label="Clear search"><X size={16} /></button> : null}
-          </label>
-
-          <div className="level-grid">
-            {(["Leader", "Employer", "Committed"] as const).map((item) => (
-              <button key={item} type="button" className={level === item ? "selected" : ""} onClick={() => resetPage(setLevel, level === item ? "" : item)}>
-                <span>{item}</span>
-                <strong>{number(stats.levelCounts[item])}</strong>
-              </button>
-            ))}
-          </div>
-
-          <label className="select-row">
-            <span><MapPin size={15} /> Region</span>
-            <select value={region} onChange={(event) => resetPage(setRegion, event.target.value)}>
-              <option value="">All regions</option>
-              {stats.regions.map((item) => (
-                <option key={item.name} value={item.name}>{item.name} ({number(item.count)})</option>
-              ))}
-            </select>
-          </label>
-
-          <label className="select-row">
-            <span><Layers3 size={15} /> Sector</span>
-            <select value={sector} onChange={(event) => resetPage(setSector, event.target.value)}>
-              <option value="">All sectors</option>
-              {stats.sectors.map((item) => (
-                <option key={item.name} value={item.name}>{item.name} ({number(item.count)})</option>
-              ))}
-            </select>
-          </label>
-
-          <button className="reset-button" type="button" disabled={!activeFilters} onClick={clearFilters}>
-            <Filter size={16} /> Reset filters
-          </button>
-        </div>
+      <aside className="control-rail blog-rail">
+        <BlogSidebar />
       </aside>
 
       <section className="result-stage">
@@ -533,6 +551,42 @@ function EmployerDirectory({ stats, initialResults }: { stats: PlatformStats; in
               <h2>Find the good-fit places.</h2>
             </div>
             <strong>{loading ? "Searching..." : `${number(results.total)} matches`}</strong>
+          </div>
+
+          <div className="search-hero">
+            <label className="search-box search-hero-box">
+              <Search size={20} />
+              <input value={query} onChange={(event) => resetPage(setQuery, event.target.value)} placeholder="Employer, town, postcode, sector..." />
+              {query ? <button type="button" onClick={() => resetPage(setQuery, "")} aria-label="Clear search"><X size={18} /></button> : null}
+            </label>
+            <div className="filter-bar">
+              <div className="level-chips">
+                {(["Leader", "Employer", "Committed"] as const).map((item) => (
+                  <button key={item} type="button" className={`chip ${level === item ? "active" : ""}`} onClick={() => resetPage(setLevel, level === item ? "" : item)}>
+                    {item}
+                  </button>
+                ))}
+              </div>
+              <label className="select-row filter-select">
+                <select value={region} onChange={(event) => resetPage(setRegion, event.target.value)}>
+                  <option value="">All regions</option>
+                  {stats.regions.map((item) => (
+                    <option key={item.name} value={item.name}>{item.name} ({number(item.count)})</option>
+                  ))}
+                </select>
+              </label>
+              <label className="select-row filter-select">
+                <select value={sector} onChange={(event) => resetPage(setSector, event.target.value)}>
+                  <option value="">All sectors</option>
+                  {stats.sectors.map((item) => (
+                    <option key={item.name} value={item.name}>{item.name} ({number(item.count)})</option>
+                  ))}
+                </select>
+              </label>
+              <button className="reset-button compact" type="button" disabled={!activeFilters} onClick={clearFilters}>
+                <Filter size={14} /> Reset
+              </button>
+            </div>
           </div>
 
           <div className="directory-grid">
