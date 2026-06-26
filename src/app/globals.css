@@ -241,10 +241,6 @@ a {
   position: sticky;
   top: 118px;
   align-self: start;
-  max-height: calc(100vh - 140px);
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgb(255 255 255 / 0.3) transparent;
 }
 
 .panel,
@@ -1194,8 +1190,6 @@ a {
   .profile-rail {
     grid-column: 1 / -1;
     position: static;
-    max-height: none;
-    overflow-y: visible;
   }
 
   .profile-panel {
@@ -1285,4 +1279,38 @@ a {
   .profile-panel h2 {
     overflow-wrap: anywhere;
   }
+}
+
+.cookie-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 3px solid var(--blue);
+  background: var(--cream);
+  padding: 14px 24px;
+  color: var(--blue);
+  font-weight: 900;
+  font-size: 0.9rem;
+}
+
+.cookie-banner p {
+  margin: 0;
+  max-width: 720px;
+}
+
+.cookie-accept {
+  flex-shrink: 0;
+  border: 3px solid var(--blue);
+  border-radius: 8px;
+  background: var(--butter);
+  padding: 10px 22px;
+  color: var(--blue);
+  font-weight: 950;
+  cursor: pointer;
 }

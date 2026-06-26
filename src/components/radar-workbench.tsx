@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft, ArrowRight, BadgeAlert, BarChart3, Briefcase, Building2,
   CheckCircle2, ExternalLink, Filter, Globe2, GraduationCap, Layers3, Loader2,
@@ -105,6 +105,14 @@ function JobsBoard() {
   const [stats, setStats] = useState<JobsStats | null>(null);
   const [selected, setSelected] = useState<Job | null>(null);
   const [loading, setLoading] = useState(false);
+  const profileRef = useRef<HTMLElement>(null);
+
+  function selectJob(job: Job) {
+    setSelected(job);
+    setTimeout(() => {
+      profileRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }, 50);
+  }
 
   const activeFilters = useMemo(() => [query, location, employmentType].filter(Boolean).length + (cyberPriority ? 1 : 0), [query, location, employmentType, cyberPriority]);
 
@@ -226,7 +234,7 @@ function JobsBoard() {
           <div className="directory-grid">
             <div className="employer-list">
               {results.items.map((job) => (
-                <article key={job.id} className={`job-row ${selected?.id === job.id ? "active" : ""}`} role="button" tabIndex={0} aria-label={`${job.title} at ${job.employerName}`} onClick={() => setSelected(job)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelected(job); }}}>
+                <article key={job.id} className={`job-row ${selected?.id === job.id ? "active" : ""}`} role="button" tabIndex={0} aria-label={`${job.title} at ${job.employerName}`} onClick={() => selectJob(job)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectJob(job); }}}>
                   <div className="job-row-top">
                     <h3>{job.title}</h3>
                     {job.relevanceScore >= 30 ? <span className="cyber-tag">Cyber</span> : null}
@@ -292,7 +300,7 @@ function JobsBoard() {
         </div>
       </section>
 
-      <aside className="profile-rail">
+      <aside className="profile-rail" ref={profileRef}>
         <div className="profile-panel">
           {selected ? (
             <>

@@ -1,4 +1,5 @@
 import { searchJobs, getJobStats } from "@/lib/jobs";
+import { revalidatePath } from "next/cache";
 
 export async function GET(request: Request) {
   const params = new URL(request.url).searchParams;
@@ -7,6 +8,11 @@ export async function GET(request: Request) {
     return Response.json(getJobStats(), {
       headers: { "Cache-Control": "public, max-age=60, s-maxage=300" },
     });
+  }
+
+  if (params.get("revalidate") === "true") {
+    revalidatePath("/", "layout");
+    return Response.json({ message: "Cache revalidated. New data will be served on next request." });
   }
 
   const results = searchJobs({

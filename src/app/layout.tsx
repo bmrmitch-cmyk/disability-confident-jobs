@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { CookieConsent } from "@/components/cookie-consent";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         <a href="#main-content" className="skip-link">Skip to main content</a>
         <div id="main-content">{children}</div>
+        <CookieConsent />
       </body>
     </html>
   );
