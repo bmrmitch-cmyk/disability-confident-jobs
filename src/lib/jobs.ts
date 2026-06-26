@@ -7,6 +7,34 @@ const employerMap = new Map(employers.map((e) => [e.id, e]));
 
 let jobsCache: Job[] | null = null;
 
+const CYBER_TITLES = [
+  "cyber", "security", "it security", "cyber security", "network security",
+  "information security", "infosec", "penetration", "ethical hack",
+  "digital forensics", "incident response", "security analyst",
+  "security engineer", "security architect", "security consultant",
+  "security operations", "soc analyst", "threat intelligence",
+  "vulnerability", "data protection", "risk analyst", "compliance",
+  "firewall", "encryption", "cryptography", "security officer",
+  "cctv operator", "security supervisor", "security manager",
+];
+
+const APPRENTICESHIP_TYPES = ["Apprenticeship", "Trainee", "Graduate"];
+
+function computeCyberScore(title: string, description: string, employmentType: string): number {
+  const t = title.toLowerCase();
+  const d = description.toLowerCase();
+  let score = 0;
+  for (const kw of CYBER_TITLES) {
+    if (t.includes(kw) || d.includes(kw)) {
+      score += 20;
+    }
+  }
+  if (APPRENTICESHIP_TYPES.includes(employmentType) && score > 0) {
+    score += 15;
+  }
+  return score;
+}
+
 function loadJobs(): Job[] {
   if (jobsCache) return jobsCache;
   try {
@@ -18,6 +46,7 @@ function loadJobs(): Job[] {
       return {
         ...j,
         employerName: employerMap.get(j.employerId)?.name ?? "Unknown",
+        relevanceScore: computeCyberScore(j.title, j.description, j.employmentType),
         accessRemote: j.accessRemote ?? (type.includes("remote") || type.includes("home") || type.includes("wfh")),
         accessFlexible: j.accessFlexible ?? (type.includes("part-time") || type.includes("flexible") || type.includes("job share")),
         accessStepFree: j.accessStepFree ?? (desc.includes("step-free") || desc.includes("wheelchair") || desc.includes("accessible")),
@@ -49,6 +78,8 @@ export function getJobStats(): JobsStats {
 
   for (const job of jobs) {
     if (job.relevanceScore >= 30) cyberPriority++;
+    const fullTitle = (`${job.title} ${job.description}`).toLowerCase();
+    if (CYBER_TITLES.some((kw) => fullTitle.includes(kw))) cyberPriority++;
     const type = job.employmentType?.toLowerCase() ?? "";
     if (type.includes("apprentice") || type.includes("trainee") || type.includes("graduate")) {
       apprenticeships++;
@@ -117,7 +148,10 @@ export function searchJobs(params: {
   }
 
   if (params.cyberPriority) {
-    results = results.filter((j) => j.relevanceScore >= 30);
+    results = results.filter((j) => {
+      const full = `${j.title} ${j.description}`.toLowerCase();
+      return CYBER_TITLES.some((kw) => full.includes(kw));
+    });
   }
 
   if (params.accessRemote) results = results.filter((j) => j.accessRemote);

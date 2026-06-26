@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { CookieConsent } from "@/components/cookie-consent";
+import { AuthProvider } from "@/lib/auth-context";
+import { FavouritesProvider } from "@/lib/favourites";
+import { Footer } from "@/components/footer";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -31,9 +34,14 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <body>
-        <a href="#main-content" className="skip-link">Skip to main content</a>
-        <div id="main-content">{children}</div>
-        <CookieConsent />
+        <AuthProvider>
+          <FavouritesProvider>
+            <a href="#main-content" className="skip-link">Skip to main content</a>
+            <div id="main-content">{children}</div>
+            <Footer />
+            <CookieConsent />
+          </FavouritesProvider>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -5,11 +5,14 @@ import {
   Accessibility, ArrowLeft, ArrowRight, BadgeAlert, BarChart3, Briefcase, Building2,
   CheckCircle2, ExternalLink, Filter, Globe2, GraduationCap, Headphones,
   Home, Layers3, Loader2, MapPin, Medal, Moon, MousePointer2, Radar,
-  Search, ShieldCheck, Sparkles, Sun, Volume2, X,
+  Search, ShieldCheck, Sparkles, Sun, User, Volume2, X,
 } from "lucide-react";
 import type { Employer, EmployerSearchResult, PlatformStats } from "@/lib/employers";
 import type { Job, JobSearchResult, JobsStats } from "@/lib/jobs-types";
 import { BlogSidebar } from "@/components/blog-sidebar";
+import { FavouriteButton } from "@/components/favourite-button";
+import { AuthModal } from "@/components/auth-modal";
+import { useAuth } from "@/lib/auth-context";
 import Link from "next/link";
 
 function safeDate(dateStr: string) {
@@ -66,6 +69,8 @@ export function RadarWorkbench({ stats, initialResults }: { stats: PlatformStats
 function TopBar({ stats, view, onViewChange }: { stats: PlatformStats; view: ViewMode; onViewChange: (v: ViewMode) => void }) {
   const [dark, setDark] = useState(false);
   const [dyslexic, setDyslexic] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     document.documentElement.dataset.theme = dark ? "dark" : "light";
@@ -102,9 +107,13 @@ function TopBar({ stats, view, onViewChange }: { stats: PlatformStats; view: Vie
         <button type="button" className={`toggle-btn ${dark ? "active" : ""}`} onClick={() => setDark((v) => !v)} title="Toggle dark mode" aria-label="Toggle dark mode">
           {dark ? <Sun size={16} /> : <Moon size={16} />}
         </button>
+        <button type="button" className={`profile-btn ${user ? "signed-in" : ""}`} onClick={() => user ? window.location.href = "/profile" : setShowAuth(true)}>
+          <User size={16} /> {user ? user.name.split(" ")[0] : "Sign in"}
+        </button>
         <span>{number(stats.total)} employers</span>
         <strong>{number(stats.total)} indexed</strong>
       </div>
+      <AuthModal open={showAuth} onClose={() => setShowAuth(false)} />
     </section>
   );
 }
@@ -294,8 +303,11 @@ function JobsBoard() {
                 <article key={job.id} className={`job-row ${selected?.id === job.id ? "active" : ""} ${job.featured ? "featured-row" : ""}`} role="button" tabIndex={0} aria-label={`${job.title} at ${job.employerName}`} onClick={() => selectJob(job)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectJob(job); }}}>
                   <div className="job-row-top">
                     <h3>{job.title}</h3>
-                    {job.featured ? <span className="featured-tag">Featured</span> : null}
-                    {job.relevanceScore >= 30 ? <span className="cyber-tag">Cyber</span> : null}
+                    <div className="job-row-badges">
+                      {job.featured ? <span className="featured-tag">Featured</span> : null}
+                      {job.relevanceScore >= 30 ? <span className="cyber-tag">Cyber</span> : null}
+                      <FavouriteButton jobId={job.id} />
+                    </div>
                   </div>
                   <p className="job-employer">{job.employerName}</p>
                   <div className="job-meta">
@@ -315,6 +327,7 @@ function JobsBoard() {
                   <div className="job-footer">
                     <small>{job.ats ? `${job.ats} · ` : ""}Posted {safeDate(job.datePosted) ?? "Unknown date"}</small>
                     {safeDate(job.closingDate) ? <small className="closing">Closes {safeDate(job.closingDate)}</small> : null}
+                    <Link href={`/jobs/${job.id}`} className="job-detail-link" onClick={(e) => e.stopPropagation()}>View details &rarr;</Link>
                   </div>
                 </article>
               ))}
@@ -395,8 +408,8 @@ function JobsBoard() {
 
               {selected.relevanceScore >= 30 ? (
                 <div className="access-card cyber-card">
-                  <h3>Cyber priority role</h3>
-                  <p>This role has been identified as a priority for cyber-security, data protection, or digital infrastructure skills. These roles are in high demand across Disability Confident employers.</p>
+                  <h3>Cyber &amp; digital security role</h3>
+                  <p>This role involves cyber-security, data protection, or digital infrastructure responsibilities. These skills are in high demand across Disability Confident employers.</p>
                 </div>
               ) : null}
 
