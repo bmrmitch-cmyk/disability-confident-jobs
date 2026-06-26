@@ -10,6 +10,8 @@ export function generateStaticParams() {
   return articles.map((a) => ({ slug: a.slug }));
 }
 
+const BASE = "https://disability-confident-platform.vercel.app";
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const article = articles.find((a) => a.slug === slug);
@@ -17,6 +19,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${article.title} | AccessWork Insights`,
     description: article.excerpt,
+    openGraph: {
+      title: `${article.title} | AccessWork`,
+      description: article.excerpt,
+      type: "article",
+      publishedTime: "2025-01-01",
+      url: `${BASE}/insights/${slug}`,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${article.title} | AccessWork`,
+      description: article.excerpt,
+    },
+    alternates: { canonical: `${BASE}/insights/${slug}` },
   };
 }
 

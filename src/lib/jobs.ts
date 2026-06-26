@@ -1,6 +1,7 @@
 import type { Employer } from "@/lib/employers";
 import type { Job, JobSearchResult, JobsStats } from "@/lib/jobs-types";
 import employersJson from "@/data/employers.json";
+import Fuse from "fuse.js";
 
 const employers = employersJson as Employer[];
 const employerMap = new Map(employers.map((e) => [e.id, e]));
@@ -129,14 +130,29 @@ export function searchJobs(params: {
   }
 
   if (params.query) {
-    const q = params.query.toLowerCase();
-    results = results.filter(
-      (j) =>
-        j.title.toLowerCase().includes(q) ||
-        j.employerName.toLowerCase().includes(q) ||
-        j.description.toLowerCase().includes(q) ||
-        (j.matchedKeywords && j.matchedKeywords.toLowerCase().includes(q)),
-    );
+    const q = params.query.toLowerCase().trim();
+    if (q.length >= 2) {
+      const fuse = new Fuse(results, {
+        keys: [
+          { name: "title", weight: 3 },
+          { name: "employerName", weight: 2 },
+          { name: "matchedKeywords", weight: 1.5 },
+          { name: "description", weight: 0.5 },
+        ],
+        threshold: 0.45,
+        includeScore: true,
+        minMatchCharLength: 2,
+      });
+      results = fuse.search(q).map((r) => r.item);
+    } else {
+      results = results.filter(
+        (j) =>
+          j.title.toLowerCase().includes(q) ||
+          j.employerName.toLowerCase().includes(q) ||
+          j.description.toLowerCase().includes(q) ||
+          (j.matchedKeywords && j.matchedKeywords.toLowerCase().includes(q)),
+      );
+    }
   }
 
   if (params.location) {

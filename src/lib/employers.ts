@@ -1,4 +1,5 @@
 import employersJson from "@/data/employers.json";
+import Fuse from "fuse.js";
 
 export type EmployerLevel = "Committed" | "Employer" | "Leader" | "Unknown";
 
@@ -30,14 +31,16 @@ export type PlatformStats = {
   towns: Array<{ name: string; count: number }>;
 };
 
-const employers = employersJson as Employer[];
+export const employers = employersJson as Employer[];
 
-const searchIndex = employers.map((employer) => ({
-  employer,
-  text: [employer.name, employer.town, employer.postcode, employer.sector, employer.region, employer.level]
-    .join(" ")
-    .toLowerCase(),
-}));
+const searchIndex = employers.map((employer) => {
+  const parts = [employer.name, employer.town, employer.postcode, employer.sector, employer.region, employer.level];
+  return {
+    employer,
+    name: employer.name.toLowerCase(),
+    text: parts.join(" ").toLowerCase(),
+  };
+});
 
 function countBy(key: keyof Employer) {
   const counts = new Map<string, number>();
@@ -96,15 +99,28 @@ export function searchEmployers({
   const safePageSize = Math.min(Math.max(pageSize, 12), 72);
   const safePage = Math.max(1, page);
 
-  const filtered = searchIndex
-    .filter(({ employer, text }) => {
-      if (normalizedQuery && !text.includes(normalizedQuery)) return false;
-      if (region && employer.region !== region) return false;
-      if (sector && employer.sector !== sector) return false;
-      if (level && employer.level !== level) return false;
-      return true;
-    })
-    .map(({ employer }) => employer);
+  let filtered: Employer[];
+
+  if (normalizedQuery.length >= 2) {
+    const fuse = new Fuse(searchIndex, {
+      keys: [
+        { name: "name", weight: 3 },
+        { name: "text", weight: 1 },
+      ],
+      threshold: 0.4,
+      includeScore: true,
+      minMatchCharLength: 2,
+    });
+    filtered = fuse.search(normalizedQuery).map((r) => r.item.employer);
+  } else {
+    filtered = searchIndex
+      .filter(({ text }) => !normalizedQuery || text.includes(normalizedQuery))
+      .map(({ employer }) => employer);
+  }
+
+  if (region) filtered = filtered.filter((e) => e.region === region);
+  if (sector) filtered = filtered.filter((e) => e.sector === sector);
+  if (level) filtered = filtered.filter((e) => e.level === level);
 
   const total = filtered.length;
   const totalPages = Math.max(1, Math.ceil(total / safePageSize));

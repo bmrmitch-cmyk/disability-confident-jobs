@@ -1,15 +1,38 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { JobsStats } from "@/lib/jobs-types";
 import type { PlatformStats } from "@/lib/employers";
+import { CheckCircle2, XCircle } from "lucide-react";
 
 const ADMIN_KEY = "accesswork_admin_auth";
 const ADMIN_PASS = "AccessWork2024!";
 
+type Claim = {
+  employerId: string;
+  name: string;
+  email: string;
+  role: string;
+  submittedAt: string;
+  status?: "approved" | "denied";
+};
+
 function isAuthed(): boolean {
   if (typeof window === "undefined") return false;
   return sessionStorage.getItem(ADMIN_KEY) === "true";
+}
+
+function loadClaims(): Claim[] {
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(localStorage.getItem("aw_claims") ?? "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveClaims(claims: Claim[]) {
+  localStorage.setItem("aw_claims", JSON.stringify(claims));
 }
 
 export default function AdminPage() {
@@ -19,6 +42,22 @@ export default function AdminPage() {
   const [jobStats, setJobStats] = useState<JobsStats | null>(null);
   const [empStats, setEmpStats] = useState<PlatformStats | null>(null);
   const [message, setMessage] = useState("");
+  const [claims, setClaims] = useState<Claim[]>([]);
+  const [claimEmployers, setClaimEmployers] = useState<Record<string, string>>({});
+
+  const refreshClaims = useCallback(() => {
+    setClaims(loadClaims());
+    const ids = loadClaims().map((c) => c.employerId);
+    if (ids.length > 0) {
+      fetch(`/api/employers?pageSize=${Math.min(ids.length, 72)}`).then((r) => r.json()).then((data) => {
+        const map: Record<string, string> = {};
+        for (const item of data.items) {
+          map[item.id] = item.name;
+        }
+        setClaimEmployers(map);
+      });
+    }
+  }, []);
 
   function login() {
     if (password === ADMIN_PASS) {
@@ -33,16 +72,15 @@ export default function AdminPage() {
   useEffect(() => {
     if (!authed) return;
     fetch("/api/jobs?stats=true").then((r) => r.json()).then(setJobStats);
-    fetch("/api/employers?pageSize=1").then((r) => r.json()).then((d) => {
-      fetch("/api/employers?pageSize=1&statsOnly=true").then(async (r2) => {
-        try {
-          setEmpStats((await r2.json()) as PlatformStats);
-        } catch {
-          setEmpStats(null);
-        }
-      });
+    fetch("/api/employers?pageSize=1&statsOnly=true").then(async (r2) => {
+      try {
+        setEmpStats((await r2.json()) as PlatformStats);
+      } catch {
+        setEmpStats(null);
+      }
     });
-  }, [authed]);
+    refreshClaims();
+  }, [authed, refreshClaims]);
 
   async function revalidate() {
     setMessage("Revalidating...");
@@ -113,6 +151,58 @@ export default function AdminPage() {
             ))}
           </div>
         ) : <p style={{ fontWeight: 950 }}>Loading...</p>}
+      </section>
+
+      <section style={{ border: "3px solid #00447c", borderRadius: 8, padding: 20, marginBottom: 16, background: "#fdf6ef" }}>
+        <h2 style={{ margin: "0 0 12px", textTransform: "uppercase" }}>
+          Employer claims ({claims.filter((c) => !c.status).length} pending)
+        </h2>
+        {claims.length === 0 ? (
+          <p style={{ fontWeight: 950, color: "rgb(0 85 155 / 0.5)" }}>No claims submitted yet.</p>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {claims.map((claim, i) => (
+              <div key={i} style={{ border: "3px solid var(--blue)", borderRadius: 8, padding: 14, background: claim.status === "approved" ? "#d4edda" : claim.status === "denied" ? "#f8d7da" : "#fff" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
+                  <div>
+                    <strong style={{ fontSize: "1.1rem", display: "block" }}>{claimEmployers[claim.employerId] ?? claim.employerId}</strong>
+                    <p style={{ margin: "4px 0 0", fontWeight: 950, fontSize: "0.85rem" }}>
+                      {claim.name} — {claim.role} ({claim.email})
+                    </p>
+                    <small style={{ color: "rgb(0 85 155 / 0.5)", fontWeight: 950 }}>
+                      Submitted {new Date(claim.submittedAt).toLocaleString("en-GB")}
+                    </small>
+                    {claim.status ? (
+                      <span style={{ display: "inline-block", marginLeft: 12, fontWeight: 950, color: claim.status === "approved" ? "#155724" : "#721c24" }}>
+                        {claim.status === "approved" ? "Approved" : "Denied"}
+                      </span>
+                    ) : null}
+                  </div>
+                  {!claim.status ? (
+                    <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                      <button onClick={() => {
+                        const next = [...claims];
+                        next[i] = { ...next[i], status: "approved" };
+                        saveClaims(next);
+                        setClaims(next);
+                      }} style={{ display: "inline-flex", alignItems: "center", gap: 4, border: "3px solid #155724", borderRadius: 8, background: "#d4edda", padding: "6px 12px", fontWeight: 950, color: "#155724", cursor: "pointer" }}>
+                        <CheckCircle2 size={14} /> Approve
+                      </button>
+                      <button onClick={() => {
+                        const next = [...claims];
+                        next[i] = { ...next[i], status: "denied" };
+                        saveClaims(next);
+                        setClaims(next);
+                      }} style={{ display: "inline-flex", alignItems: "center", gap: 4, border: "3px solid #721c24", borderRadius: 8, background: "#f8d7da", padding: "6px 12px", fontWeight: 950, color: "#721c24", cursor: "pointer" }}>
+                        <XCircle size={14} /> Deny
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <section style={{ border: "3px solid #00447c", borderRadius: 8, padding: 20, background: "#fdf6ef" }}>

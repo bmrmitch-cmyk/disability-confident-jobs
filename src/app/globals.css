@@ -2397,6 +2397,65 @@ a {
   .level-chips {
     flex-wrap: wrap;
   }
+
+  .metric-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .metric-box {
+    padding: 12px;
+  }
+
+  .metric-box strong {
+    font-size: 1.5rem;
+  }
+
+  .profile-dashboard {
+    grid-template-columns: 1fr;
+  }
+
+  .pricing-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-panel h2 {
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+  }
+
+  .employer-hero {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+
+  .employer-hero > div:last-child {
+    text-align: left !important;
+  }
+
+  .directory-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .site-nav {
+    gap: 6px;
+    padding: 0 10px;
+    height: 46px;
+  }
+
+  .site-nav-links {
+    display: none;
+  }
+
+  .site-nav-tools {
+    margin-left: auto;
+  }
+
+  .site-nav-logo {
+    font-size: 1rem;
+  }
 }
 
 @media (max-width: 670px) {
@@ -2415,6 +2474,95 @@ a {
 
   .insights-grid {
     grid-template-columns: 1fr;
+  }
+
+  .hero-panel h2 {
+    font-size: 1.6rem;
+  }
+
+  .job-row h3 {
+    font-size: 1rem;
+  }
+
+  .pagination {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .pagination div {
+    width: 100%;
+  }
+
+  .pagination button {
+    flex: 1;
+  }
+
+  .employer-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    min-height: auto;
+    padding: 12px;
+  }
+
+  .employer-row aside {
+    text-align: left;
+  }
+
+  .blog-panel {
+    padding: 14px 12px;
+  }
+
+  .blog-scroll {
+    gap: 8px;
+  }
+
+  .blog-teaser {
+    padding: 10px;
+  }
+
+  .blog-teaser strong {
+    font-size: 0.85rem;
+  }
+
+  .blog-cta-panel {
+    padding: 14px;
+  }
+
+  .section-heading h2 {
+    font-size: 1rem;
+  }
+
+  .search-hero-box {
+    padding: 12px 14px;
+  }
+
+  .search-hero-box input {
+    font-size: 0.95rem;
+  }
+
+  .article-page {
+    padding: 0 12px !important;
+  }
+
+  .article-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .article-content {
+    padding: 16px !important;
+  }
+
+  .employers-page {
+    padding: 12px 14px !important;
+  }
+
+  .employer-hero h1 {
+    font-size: 1.5rem !important;
+  }
+
+  .job-row-badges {
+    flex-wrap: wrap;
   }
 }
 
