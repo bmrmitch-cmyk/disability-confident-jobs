@@ -1,15 +1,17 @@
 :root {
-  --cream: #fff6eb;
-  --butter: #fdcd00;
-  --blue: #00559b;
+  --cream: #fdf6ef;
+  --butter: #e8b800;
+  --blue: #00447c;
   --blue-soft: #d7ecff;
-  --magenta: #be008b;
-  --red: #bc0041;
-  --orange: #ef6f2e;
-  --mint: #b7f2d7;
-  --ink: #003f74;
-  --line: #00559b;
-  --white: #fffdf6;
+  --magenta: #9a0070;
+  --red: #a00037;
+  --orange: #cc5c1e;
+  --mint: #a3e8c7;
+  --ink: #00335c;
+  --line: #00447c;
+  --white: #fffaf5;
+  --grey-soft: #f0e8de;
+  --text-muted: #00579a;
 }
 
 * {
@@ -51,7 +53,7 @@ body {
   min-height: 100%;
   background: var(--cream);
   color: var(--blue);
-  font-family: "Arial Rounded MT Bold", "Trebuchet MS", Arial, sans-serif;
+  font-family: "Trebuchet MS", "Arial Rounded MT Bold", Arial, sans-serif;
 }
 
 button,
@@ -74,9 +76,9 @@ a {
   min-height: 100vh;
   overflow-x: hidden;
   background:
-    radial-gradient(circle at 14% 16%, rgb(253 205 0 / 0.45) 0 70px, transparent 72px),
-    radial-gradient(circle at 88% 18%, rgb(190 0 139 / 0.18) 0 86px, transparent 88px),
-    linear-gradient(180deg, #fff6eb 0%, #fff1d9 100%);
+    radial-gradient(circle at 14% 16%, rgb(232 184 0 / 0.3) 0 70px, transparent 72px),
+    radial-gradient(circle at 88% 18%, rgb(154 0 112 / 0.12) 0 86px, transparent 88px),
+    linear-gradient(180deg, #fdf6ef 0%, #f7ecdc 100%);
 }
 
 .topbar {
@@ -253,7 +255,7 @@ a {
 
 .intro-panel {
   margin-bottom: 16px;
-  background: var(--butter);
+  background: #f5e6c8;
 }
 
 .intro-panel svg {
@@ -341,7 +343,7 @@ a {
 
 .level-grid button:last-child {
   grid-column: 1 / -1;
-  background: #ffe19d;
+  background: #f0dbb0;
 }
 
 .level-grid button.selected {
@@ -437,7 +439,7 @@ a {
 }
 
 .metric-card:nth-child(2) {
-  background: var(--butter);
+  background: #f5e6c8;
 }
 
 .metric-card:nth-child(3) {
@@ -445,7 +447,7 @@ a {
 }
 
 .metric-card:nth-child(4) {
-  background: #ffcbb9;
+  background: #f0e0d8;
 }
 
 .metric-card > span {
@@ -621,7 +623,7 @@ a {
 }
 
 .is-committed {
-  background: #ffe19d;
+  background: #f0dbb0;
   color: var(--blue);
 }
 

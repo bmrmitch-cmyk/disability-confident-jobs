@@ -9,6 +9,20 @@ import {
 import type { Employer, EmployerSearchResult, PlatformStats } from "@/lib/employers";
 import type { Job, JobSearchResult, JobsStats } from "@/lib/jobs-types";
 
+function safeDate(dateStr: string) {
+  if (!dateStr) return null;
+  const n = Date.parse(dateStr);
+  if (isNaN(n)) return null;
+  return new Date(n).toLocaleDateString("en-GB");
+}
+
+function safeTime(dateStr: string) {
+  if (!dateStr) return null;
+  const n = Date.parse(dateStr);
+  if (isNaN(n)) return null;
+  return new Date(n).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+}
+
 type LiveJobs = {
   query: string;
   status: "live" | "fallback";
@@ -161,9 +175,9 @@ function JobsBoard() {
           </label>
 
           <div className="filter-chips">
-            <button type="button" className={cyberPriority ? "chip active" : "chip"} onClick={() => resetPage(setCyberPriority, !cyberPriority)}>
-              <BadgeAlert size={14} /> Cyber priority
-            </button>
+                            <button type="button" className={cyberPriority ? "chip active" : "chip"} onClick={() => resetPage(setCyberPriority, !cyberPriority)} title="Roles in cyber-security, data protection and digital infrastructure with high relevance scores">
+                              <BadgeAlert size={14} /> Cyber priority
+                            </button>
           </div>
 
           <label className="select-row">
@@ -212,7 +226,7 @@ function JobsBoard() {
           <div className="directory-grid">
             <div className="employer-list">
               {results.items.map((job) => (
-                <button key={job.id} type="button" className={`job-row ${selected?.id === job.id ? "active" : ""}`} onClick={() => setSelected(job)}>
+                <article key={job.id} className={`job-row ${selected?.id === job.id ? "active" : ""}`} role="button" tabIndex={0} aria-label={`${job.title} at ${job.employerName}`} onClick={() => setSelected(job)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelected(job); }}}>
                   <div className="job-row-top">
                     <h3>{job.title}</h3>
                     {job.relevanceScore >= 30 ? <span className="cyber-tag">Cyber</span> : null}
@@ -224,10 +238,10 @@ function JobsBoard() {
                     {job.salary ? <span className="job-salary">{job.salary}</span> : null}
                   </div>
                   <div className="job-footer">
-                    <small>{job.ats ? `${job.ats} · ` : ""}Posted {new Date(job.datePosted).toLocaleDateString("en-GB")}</small>
-                    {job.closingDate ? <small className="closing">Closes {new Date(job.closingDate).toLocaleDateString("en-GB")}</small> : null}
+                    <small>{job.ats ? `${job.ats} · ` : ""}Posted {safeDate(job.datePosted) ?? "Unknown date"}</small>
+                    {safeDate(job.closingDate) ? <small className="closing">Closes {safeDate(job.closingDate)}</small> : null}
                   </div>
-                </button>
+                </article>
               ))}
 
               {!results.items.length ? (
@@ -290,8 +304,8 @@ function JobsBoard() {
                 <span><b>Location</b>{selected.location}</span>
                 <span><b>Type</b>{selected.employmentType}</span>
                 <span><b>Salary</b>{selected.salary || "Unspecified"}</span>
-                <span><b>Posted</b>{new Date(selected.datePosted).toLocaleDateString("en-GB")}</span>
-                {selected.closingDate ? <span><b>Closes</b>{new Date(selected.closingDate).toLocaleDateString("en-GB")}</span> : null}
+                <span><b>Posted</b>{safeDate(selected.datePosted) ?? "Unknown"}</span>
+                {safeDate(selected.closingDate) ? <span><b>Closes</b>{safeDate(selected.closingDate)}</span> : null}
                 <span><b>ATS</b>{selected.ats || "Unknown"}</span>
               </div>
 
@@ -587,7 +601,7 @@ function EmployerDirectory({ stats, initialResults }: { stats: PlatformStats; in
                 <div className="live-panel">
                   <div className="live-header">
                     <span>{liveJobs.status === "live" ? "Live web results" : "Search links"}</span>
-                    <b>{new Date(liveJobs.checkedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</b>
+                    <b>{safeTime(liveJobs.checkedAt) ?? ""}</b>
                   </div>
                   <p className="query-line">{liveJobs.query}</p>
 
